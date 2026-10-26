@@ -16,7 +16,9 @@ public class ObservadorConsola implements ObservadorPasos {
     @Override
     public void arbol(String representacion) {
         if (mostrarArbol) {
+            System.out.println();
             System.out.println("    " + representacion.replace("\n", "\n    "));
+            System.out.println();
         }
     }
 }

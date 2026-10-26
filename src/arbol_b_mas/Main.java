@@ -63,10 +63,12 @@ public class Main {
 
         System.out.print("\nIngrese la clave: ");
         String clave = leerLinea();
+        System.out.println();
 
         while (!validarClave(clave)) {
             System.out.print("\nIngrese la clave: ");
             clave = leerLinea();
+            System.out.println();
         }
         return clave.toLowerCase();
     }
@@ -111,6 +113,7 @@ public class Main {
     public static void main(String[] args) {
         int orden = solicitarOrden();
         ArbolBMas arbol = new ArbolBMas(orden);
+        arbol.establecerObservador(new ObservadorConsola(true));
 
         boolean salir = false;
         
@@ -136,6 +139,8 @@ public class Main {
                         System.out.println("\nEl árbol está vacío.");
                     } else {
                         System.out.println("\n" + arbol.comoTexto());
+                        System.out.println("\nHojas enlazadas: " + arbol.clavesEnOrden());
+                        System.out.println();
                         arbol.imprimir();
                     }
                     break;

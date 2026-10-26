@@ -96,7 +96,7 @@ public class ArbolBMas {
     public boolean insertar(String clave){
          
         if (raiz == null) {
-            notificar("El árbol está vacío. Se crea una hoja raíz con la clave '" + clave + "'.");
+            notificar("El árbol está vacío. Se crea una hoja raíz con la clave '" + clave + "'. El árbol queda así: ");
             raiz = new Nodo(true);
             raiz.claves.add(clave);
             notificarArbol();
@@ -104,7 +104,9 @@ public class ArbolBMas {
             return true;
         }
 
-        notificar("Se inicia la inserción de '" + clave + "' en la raíz " + raiz + ".");
+        notificar("El árbol antes de la operación: ");
+        notificarArbol();
+        notificar("Se inicia la inserción de la clave '" + clave + "' en la raíz " + raiz + ".");
 
         EstadoInsercion estado = new EstadoInsercion();
         ResultadoSplit split = insertarRecursivo(raiz, clave, estado);
@@ -115,9 +117,11 @@ public class ArbolBMas {
         }
 
         if (split != null) {
+            
             notificar("La raíz se dividió. Se crea una nueva raíz con la clave '"
                 + split.clavePromovida + "' y los hijos " + split.nodoIzquierdo
-                + " y " + split.nodoDerecho + ".");
+                + " y " + split.nodoDerecho + ". El árbol queda así: ");
+            
             Nodo nuevaRaiz = new Nodo(false);
             nuevaRaiz.claves.add(split.clavePromovida);
             nuevaRaiz.hijos.add(split.nodoIzquierdo);
@@ -126,6 +130,8 @@ public class ArbolBMas {
             notificarArbol();
         }
         notificar("Operación finalizada: la clave '" + clave + "' fue insertada.");
+        notificar("El árbol luego de la operación es: ");
+        notificarArbol();
         return true;
     }
 
@@ -144,7 +150,7 @@ public class ArbolBMas {
 
             nodo.claves.add(posicion, clave);
             estado.insertado = true;
-            notificar("Se inserta '" + clave + "'. La hoja queda " + nodo + ".");
+            notificar("Se inserta '" + clave + "'. La hoja queda " + nodo + ". El árbol queda así:");
             notificarArbol();
 
             if (nodo.claves.size() > maxClaves) {
@@ -157,7 +163,10 @@ public class ArbolBMas {
         }
 
         int indiceDescenso = indiceHijo(nodo, clave);
-        notificar("En el nodo interno " + nodo + " la clave '" + clave + "' corresponde al hijo de índice " + indiceDescenso + ".");
+
+        notificar("En el nodo interno " + nodo + " la clave '" + clave + "' corresponde al hijo de índice " + indiceDescenso + ", porque "
+        + explicarDescenso(nodo, indiceDescenso, clave) + ".");
+
         ResultadoSplit splitHijo = insertarRecursivo(nodo.hijos.get(indiceDescenso), clave, estado);
         
         if (!estado.insertado || splitHijo == null) {
@@ -169,7 +178,7 @@ public class ArbolBMas {
 
         nodo.claves.add(indiceDescenso, splitHijo.clavePromovida);
         nodo.hijos.add(indiceDescenso + 1, splitHijo.nodoDerecho);
-        notificar("El nodo interno queda " + nodo + ".");
+        notificar("El nodo interno queda " + nodo + ". El árbol queda así:");
         notificarArbol();
 
         if (nodo.claves.size() > maxClaves) {
@@ -189,12 +198,18 @@ public class ArbolBMas {
             return false;
         }
 
+        notificar("El árbol es: ");
+        notificarArbol();
+
         Nodo nodoActual = raiz;
         notificar("Se inicia la búsqueda en la raíz " + nodoActual + ".");
 
         while (!nodoActual.esHoja) {
             int indiceDescenso = indiceHijo(nodoActual, clave);
-            notificar("En el nodo interno " + nodoActual + " la clave '" + clave + "' corresponde al hijo de índice " + indiceDescenso + ".");
+            
+            notificar("En el nodo interno " + nodoActual + " la clave '" + clave + "' corresponde al hijo de índice " + indiceDescenso 
+            + ", porque " + explicarDescenso(nodoActual, indiceDescenso, clave) + ".");
+
             nodoActual = nodoActual.hijos.get(indiceDescenso);
         }
 
@@ -220,6 +235,8 @@ public class ArbolBMas {
             return false;
         }
 
+        notificar("El árbol antes de la operación es: ");
+        notificarArbol();
         notificar("Se inicia la eliminación de '" + clave + "' en la raíz " + raiz + ".");
 
         boolean eliminado = eliminarRecursivo(raiz, clave);
@@ -235,7 +252,7 @@ public class ArbolBMas {
                 raiz = null;
             } else {
                 notificar("La raíz quedó sin claves. Su único hijo " + raiz.hijos.get(0)
-                    + " pasa a ser la nueva raíz y la altura del árbol se reduce en un nivel.");
+                    + " pasa a ser la nueva raíz y la altura del árbol se reduce en un nivel. El árbol queda así: ");
                 raiz = raiz.hijos.get(0);
             }
             notificarArbol();
@@ -246,6 +263,8 @@ public class ArbolBMas {
         }
 
         notificar("Operación finalizada: la clave '" + clave + "' fue eliminada.");
+        notificar("El árbol luego de la operación es: ");
+        notificarArbol();
         return true;
     }
 
@@ -264,7 +283,7 @@ public class ArbolBMas {
             if (posicion < nodo.claves.size() && comparar(nodo.claves.get(posicion), clave) == 0) {
                 notificar("Se elimina '" + clave + "' de la hoja " + nodo + ".");
                 nodo.claves.remove(posicion);
-                notificar("La hoja queda " + nodo + ".");
+                notificar("La hoja queda " + nodo + ". El árbol queda así: ");
                 notificarArbol();
                 return true;
             }
@@ -274,7 +293,10 @@ public class ArbolBMas {
         }
 
         int indiceDescenso = indiceHijo(nodo, clave);
-        notificar("En el nodo interno " + nodo + " la clave '" + clave + "' corresponde al hijo de índice " + indiceDescenso + ".");
+        
+        notificar("En el nodo interno " + nodo + " la clave '" + clave + "' corresponde al hijo de índice " + indiceDescenso
+        + ", porque " + explicarDescenso(nodo, indiceDescenso, clave) + ".");
+
         Nodo hijo = nodo.hijos.get(indiceDescenso);
         boolean eliminado = eliminarRecursivo(hijo, clave);
 
@@ -332,7 +354,7 @@ public class ArbolBMas {
                         + "del hermano izquierdo sube al padre.");
             }
 
-            notificar("Resultado: hermano izquierdo " + hermanoIzquierdo + ", nodo " + hijo + ", padre " + padre + ".");
+            notificar("Resultado: hermano izquierdo " + hermanoIzquierdo + ", nodo " + hijo + ", padre " + padre + ". El árbol queda así: ");
             notificarArbol();
 
         } else if (hermanoDerecho != null && hermanoDerecho.claves.size() > minClaves) {
@@ -357,7 +379,7 @@ public class ArbolBMas {
                 notificar("El separador del padre baja al final del nodo y la primera clave "
                         + "del hermano derecho sube al padre.");
             }
-            notificar("Resultado: nodo " + hijo + ", hermano derecho " + hermanoDerecho + ", padre " + padre + ".");
+            notificar("Resultado: nodo " + hijo + ", hermano derecho " + hermanoDerecho + ", padre " + padre + ". El árbol queda así: ");
             notificarArbol();
 
         } else if (hermanoIzquierdo != null) {
@@ -383,7 +405,7 @@ public class ArbolBMas {
                 notificar("El separador '" + separador + "' baja del padre y se une, junto con las claves "
                         + "y los hijos del nodo, al hermano izquierdo.");
             }
-            notificar("Resultado: nodo fusionado " + nodoFusionado + ", padre " + padre + ".");
+            notificar("Resultado: nodo fusionado " + nodoFusionado + ", padre " + padre + ". El árbol queda así: ");
             notificarArbol();
 
         } else if (hermanoDerecho != null) {
@@ -404,7 +426,7 @@ public class ArbolBMas {
                 notificar("El separador '" + separador + "' baja del padre y se une, junto con las claves "
                         + "y los hijos del hermano derecho, al nodo.");
             }
-            notificar("Resultado: nodo fusionado " + nodoFusionado + ", padre " + padre + ".");
+            notificar("Resultado: nodo fusionado " + nodoFusionado + ", padre " + padre + ". El árbol queda así: ");
             notificarArbol();
         }
     }
@@ -489,7 +511,7 @@ public class ArbolBMas {
 
                 notificar("El nodo interno " + actual + " contiene el separador '" + separadorAnterior
                         + "'. Se reemplaza por '" + separadorNuevo
-                        + "', la clave mínima de su subárbol derecho.");
+                        + "', la clave mínima de su subárbol derecho. El árbol queda así: ");
 
                 actual.claves.set(indiceDescenso - 1, separadorNuevo);
                 reemplazado = true;
@@ -541,7 +563,25 @@ public class ArbolBMas {
         return impresorConsola.generar(raiz);
     }
 
+    private String explicarDescenso(Nodo nodo, int indice, String clave) {
+
+        int total = nodo.claves.size();
+
+        if (total == 0) {
+            return "el nodo no tiene claves";
+        }
+        if (indice == 0) {
+            return "'" + clave + "' es menor que '" + nodo.claves.get(0) + "'";
+        }
+        if (indice == total) {
+            return "'" + clave + "' es mayor o igual que '" + nodo.claves.get(total - 1) + "'";
+        }
+        return "'" + clave + "' es mayor o igual que '" + nodo.claves.get(indice - 1)
+            + "' y menor que '" + nodo.claves.get(indice) + "'";
+    }
+
     // 6. Verificar enlaces entre hojas
+
 
     public String clavesEnOrden() {
 
@@ -557,10 +597,16 @@ public class ArbolBMas {
         StringBuilder texto = new StringBuilder();
         while (hoja != null) {
             texto.append(hoja);
-            if (hoja.hojaSiguiente != null) {
-                texto.append(" -> ");
+
+            Nodo siguiente = hoja.hojaSiguiente;
+            if (siguiente != null) {
+                if (siguiente.hojaAnterior == hoja) {
+                    texto.append(" <-> ");
+                } else {
+                    texto.append(" -> ");
+                }
             }
-            hoja = hoja.hojaSiguiente;
+            hoja = siguiente;
         }
         return texto.toString();
     }
