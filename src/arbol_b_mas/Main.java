@@ -2,6 +2,12 @@ package arbol_b_mas;
 
 import java.util.Scanner;
 
+/*
+Programa principal. Mestra un menú en consola para insertar, buscar y eliminar claves en un árbol B+, mostrarlo y configurar el paso a paso.
+Solo se ocupa de pedir y validar los datos del usuario; la lógica del árbol está en ArbolBMas.
+Los resultados de cada operación se muestran mediante un ObservadorConsola.
+ */
+
 public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);

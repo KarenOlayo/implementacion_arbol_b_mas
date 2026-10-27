@@ -3,6 +3,12 @@ package arbol_b_mas;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+Nodo del árbol B+ que pude ser una hoja o nodo interno.
+En una hoja, las claves corresponden a los datos reales, y en un nodo interno, son separadores.
+Solo los nodos hojas tienen enlaces al nodo anterior y al nodo siguiente.
+*/
+
 public class Nodo {
     
     List<String> claves;

@@ -16,6 +16,12 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
+/*
+ Dibuja el árbol como imagen PNG. Cada nodo es un rectángulo con una celda
+ por clave, y las hojas se unen con flechas dobles. Guarda la imagen en
+ la carpeta "imagenes" y, si hay entorno gráfico, la muestra en una ventana.
+ */
+
 public class ImpresorImagen {
 
     // Medidas

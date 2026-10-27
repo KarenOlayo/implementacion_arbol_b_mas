@@ -1,5 +1,10 @@
 package arbol_b_mas;
 
+/*
+Árbol B+ de claves de texto.
+Ofrece inserción, búsqueda, eliminación y visualización, y puede informar cada paso a un observador.
+*/
+
 public class ArbolBMas {
 
     private Nodo raiz;
@@ -9,9 +14,9 @@ public class ArbolBMas {
     private final int minClavesInterno;
     private final int minClavesHoja;
 
-    private final ImpresorImagen impresor = new ImpresorImagen();
-    private final ImpresorConsola impresorConsola = new ImpresorConsola();
-    private ObservadorPasos observador = null;
+    private final ImpresorImagen impresor = new ImpresorImagen(); // Genera la imagen del árbol
+    private final ImpresorConsola impresorConsola = new ImpresorConsola(); // Genera el dibujo del árbol en texto
+    private ObservadorPasos observador = null;     // Recibe los mensajes del paso a paso; es null si no hay observador
     
 
     public ArbolBMas(int orden) {
@@ -32,6 +37,10 @@ public class ArbolBMas {
         return clave1.compareToIgnoreCase(clave2);
     }
 
+    /*
+    Devuelve el índice del hijo por el que debe descender la clave en un nodo interno.
+    Usa >= para que, si la clave es igual a un separador, baje por el hijo que está a la derecha de ese separador.
+    */
     private int indiceHijo(Nodo nodo, String clave) {
 
         int i = 0;
@@ -41,6 +50,10 @@ public class ArbolBMas {
         return i;
     }
 
+    /*
+    Devuelve la posición de la clave en una hoja, o la posición donde debería insertarse.
+    Usa > para detenerse en la primera clave igual o mayor.
+    */
     private int posicionEnHoja(Nodo hoja, String clave) {
     
         int i = 0;
@@ -52,6 +65,12 @@ public class ArbolBMas {
 
     // 1. Insertar
 
+    /*
+    Divide en dos una hoja que supera el número de claves permitido.
+    La mitad inferior o izquierda queda en la hoja y la superior o derecha pasa a una hoja nueva a su derecha,
+    que se enlaza en la lista de hojas.
+    La clave promovida es la primera de la hoja nueva. No se quita de la hoja; se devuelve para que el padre la copie como separador.
+    */
     private ResultadoSplit dividirHoja(Nodo hoja) {
         
         int total = hoja.claves.size();
@@ -61,7 +80,7 @@ public class ArbolBMas {
         derecho.claves.addAll(hoja.claves.subList(mitad, total));
         hoja.claves.subList(mitad, total).clear();
 
-        derecho.hojaSiguiente = hoja.hojaSiguiente; // Puntero al siguiente nodo hoja
+        derecho.hojaSiguiente = hoja.hojaSiguiente; // Puntero al nodo hoja siguiente
         derecho.hojaAnterior = hoja; // Puntero al nodo hoja anterior
 
         if (hoja.hojaSiguiente != null) {
@@ -74,6 +93,13 @@ public class ArbolBMas {
         return new ResultadoSplit(clavePromovida, hoja, derecho);
     }
 
+    /*
+    Divide en dos un nodo interno que supera el número de claves permitido.
+    La mitad inferior o izquierda (sus claves y los hijos correspondientes) queda en el nodo original.
+    La mitad superior o derecha (sus claves y los hijos restantes) pasa a un nodo interno nuevo a su derecha.
+    La clave promovida es la del medio, entre las dos mitades. No queda en ninguno de los dos nodos;
+    se devuelve para que el padre la reciba como separador.
+    */
     private ResultadoSplit dividirNodoInterno(Nodo nodo) {
         
         int total = nodo.claves.size();
@@ -93,6 +119,11 @@ public class ArbolBMas {
         return new ResultadoSplit(clavePromovida, nodo, derecho);
     }
 
+    /*
+    Inserta una clave en el árbol. Si la raíz se divide, crea una raíz nueva y el árbol crece un nivel.
+    Si el árbol está vacío, crea una hoja como raíz.
+    Retorna true si se insertó o false si la clave ya existía.
+    */
     public boolean insertar(String clave){
          
         if (raiz == null) {
@@ -135,6 +166,12 @@ public class ArbolBMas {
         return true;
     }
 
+    /*
+    Baja hasta la hoja correspondiente e inserta la clave en orden. Si la hoja excede el máximo de claves permitidas,
+    se divide y devuelve el resultado a su padre. El padre inserta la clave promovida; solo si él también excede el máximo se divide
+    y sube su propia división. Si un nodo no se divide, la propagación se detiene.
+    Si la clave ya existe, marca el estado como no insertado y no cambia nada.
+     */
     private ResultadoSplit insertarRecursivo(Nodo nodo, String clave, EstadoInsercion estado){
         
         if (nodo.esHoja) {
@@ -191,6 +228,7 @@ public class ArbolBMas {
     
     // 2. Buscar
     
+    /* Busca una clave bajando desde la raíz hasta una hoja. Siempre llega a una hoja, porque las claves reales solo están allí. */
     public boolean buscar(String clave) {
 
         if (estaVacio()) {
@@ -227,7 +265,12 @@ public class ArbolBMas {
     }
     
     // 3. Eliminar
-
+    
+    /*
+    Elimina una clave del árbol. Si la raíz queda vacía, el árbol queda vacío (si era hoja) o su único hijo pasa a ser la raíz
+    y el árbol pierde un nivel. Al final revisa que la clave eliminada no siga como separador en algún nodo interno.
+    Retorna true si se eliminó; false si la clave no existía
+     */
     public boolean eliminar(String clave) {
 
         if (estaVacio()) {
@@ -268,6 +311,9 @@ public class ArbolBMas {
         return true;
     }
 
+    /*
+    Devuelve el mínimo de claves que debe tener un nodo en función de si es una hoja o un nodo interno.
+    */
     private int minimoClaves(Nodo nodo) {
         if (nodo.esHoja) {
             return minClavesHoja;
@@ -275,6 +321,12 @@ public class ArbolBMas {
         return minClavesInterno;
     }
 
+    /*
+    Baja hasta la hoja correspondiente y elimina la clave. Al volver de la
+    recursión, cada nodo interno revisa si el hijo por el que bajó quedó con
+    menos claves que el mínimo y, si es así, lo corrige. La raíz no tiene padre que la revise, por eso queda exenta del mínimo.
+    Retorna true si la clave se eliminó
+     */
     private boolean eliminarRecursivo(Nodo nodo, String clave) {
 
         if (nodo.esHoja) {
@@ -283,6 +335,12 @@ public class ArbolBMas {
             if (posicion < nodo.claves.size() && comparar(nodo.claves.get(posicion), clave) == 0) {
                 notificar("Se elimina '" + clave + "' de la hoja " + nodo + ".");
                 nodo.claves.remove(posicion);
+                
+                if (nodo == raiz || nodo.claves.size() >= minClavesHoja) {
+                    notificar("Caso 1 - Eliminación simple: la hoja " + nodo
+                    + " conserva al menos " + minClavesHoja + " claves, no hay violación de la ocupación mínima.");
+                }
+
                 notificar("La hoja queda " + nodo + ". El árbol queda así: ");
                 notificarArbol();
                 return true;
@@ -312,6 +370,15 @@ public class ArbolBMas {
         return true;
     }
 
+    /*
+    Repara un hijo que quedó con menos claves que el mínimo. Intenta las soluciones en este orden de prioridad:
+    1. Prestar una clave del hermano izquierdo.
+    2. Prestar una clave del hermano derecho.
+    3. Fusionar con el hermano izquierdo.
+    4. Fusionar con el hermano derecho (solo si no hay hermano izquierdo).
+    Prestar es preferible porque no cambia la cantidad de nodos ni afecta al padre.
+    Fusionar quita un separador del padre y puede dejarlo con pocas claves, lo que se corrige en el nivel superior.
+     */
     private void corregirUnderflow(Nodo padre, int indiceHijo) {
 
         Nodo hijo = padre.hijos.get(indiceHijo);
@@ -340,6 +407,8 @@ public class ArbolBMas {
 
         if (hermanoIzquierdo != null && hermanoIzquierdo.claves.size() > minClaves) {
 
+            notificar("Caso 2a - Préstamo desde el hermano izquierdo: redistribución con un hermano adyacente que tiene más del mínimo.");
+
             notificar("El hermano izquierdo " + hermanoIzquierdo + " tiene "
                 + hermanoIzquierdo.claves.size() + " claves y el mínimo es " + minClaves
                 + ". Puede prestar una clave.");
@@ -358,6 +427,8 @@ public class ArbolBMas {
             notificarArbol();
 
         } else if (hermanoDerecho != null && hermanoDerecho.claves.size() > minClaves) {
+
+            notificar("Caso 2b - Préstamo desde el hermano derecho: redistribución con un hermano adyacente que tiene más del mínimo.");
             
             if (hermanoIzquierdo == null) {
                 notificar("No existe hermano izquierdo.");
@@ -384,6 +455,8 @@ public class ArbolBMas {
 
         } else if (hermanoIzquierdo != null) {
 
+            notificar("Caso 3a - Fusión: ningún hermano puede prestar. Se fusiona con el hermano izquierdo.");
+
             String separador = padre.claves.get(indiceHijo - 1);
 
             notificar("El hermano izquierdo " + hermanoIzquierdo + " tiene " + hermanoIzquierdo.claves.size() + " claves y no puede prestar.");
@@ -392,8 +465,6 @@ public class ArbolBMas {
                 notificar("El hermano derecho " + hermanoDerecho + " tiene "
                         + hermanoDerecho.claves.size() + " claves y tampoco puede prestar.");
             }
-
-            notificar("Se fusiona con el hermano izquierdo.");
 
             fusionarConHermano(padre, indiceHijo - 1);
             Nodo nodoFusionado = hermanoIzquierdo;
@@ -409,6 +480,8 @@ public class ArbolBMas {
             notificarArbol();
 
         } else if (hermanoDerecho != null) {
+
+            notificar("Caso 3b - Fusión: ningún hermano puede prestar. Se fusiona con el hermano derecho.");
 
             String separador = padre.claves.get(indiceHijo);
 
@@ -431,6 +504,11 @@ public class ArbolBMas {
         }
     }
 
+    /*
+    Mueve una clave del hermano izquierdo al hijo que quedó con menos claves que el mínimo.
+    En una hoja: la última clave del hermano pasa al inicio del hijo, y el separador del padre se reemplaza por la nueva primera clave del hijo.
+    En un nodo interno: el separador del padre baja al inicio del hijo, y la última clave del hermano sube al padre como nuevo separador.
+     */
     private void prestarDeIzquierda(Nodo padre, int indiceHijo) {
 
         Nodo hijo = padre.hijos.get(indiceHijo);
@@ -450,6 +528,13 @@ public class ArbolBMas {
         }
     }
 
+    /*
+    Mueve una clave del hermano derecho al hijo que quedó con menos claves que el mínimo.
+    En una hoja: la primera clave del hermano pasa al final del hijo, y el
+    separador del padre se reemplaza por la nueva primera clave del hermano.
+    En un nodo interno: el separador del padre baja al final del hijo, y la
+    primera clave del hermano sube al padre como nuevo separador.
+     */
     private void prestarDeDerecha(Nodo padre, int indiceHijo) {
 
         Nodo hijo = padre.hijos.get(indiceHijo);
@@ -471,7 +556,9 @@ public class ArbolBMas {
 
     /*
     Fusiona el hijo en la posición indiceIzquierdo con el hijo en la posición indiceIzquierdo + 1.
-    El resultado queda en el hijo izquierdo y se elimina el hijo derecho junto con su separador.
+    El resultado queda en el hijo izquierdo y se elimina el hijo derecho junto con su separador en el padre.
+    En hojas, el separador se descarta y se reparan los enlaces entre hojas.
+    En nodos internos, el separador baja y se une a las claves y los hijos.
     */
     private void fusionarConHermano(Nodo padre, int indiceIzquierdo) {
 
@@ -495,6 +582,11 @@ public class ArbolBMas {
         padre.hijos.remove(indiceIzquierdo + 1);
     }
 
+    /*
+    Si la clave eliminada sigue como separador en algún nodo interno, la
+    reemplaza por la clave mínima del subárbol derecho. La búsqueda funciona
+    sin este paso, pero así los separadores siempre son claves que existen.
+    */
     private void actualizarSeparador(Nodo nodo, String clave) {
 
         notificar("Se verifica si la clave '" + clave + "' permanece como separador en algún nodo interno.");
@@ -525,6 +617,7 @@ public class ArbolBMas {
         }
     }
 
+    /* Baja siempre por el primer hijo y devuelve la primera clave de la hoja más a la izquierda. */
     private String claveMinima(Nodo nodo) {
 
         Nodo actual = nodo;
@@ -543,26 +636,31 @@ public class ArbolBMas {
 
     // 5. Mostrar proceso de busqueda, insercion y eliminacion
 
+    /* Asigna el observador que recibe el paso a paso; con null se desactiva. */
     public void establecerObservador(ObservadorPasos observador) {
         this.observador = observador;
     }
 
+    /* Envía un mensaje al observador, si existe. */
     private void notificar(String descripcion) {
         if (observador != null) {
             observador.paso(descripcion);
         }
     }
 
+    /* Envía al observador el dibujo actual del árbol, si existe. */
     private void notificarArbol() {
         if (observador != null) {
             observador.arbol(impresorConsola.generar(raiz));
         }
     }
 
+    /* Devuelve el árbol dibujado como texto. */
     public String comoTexto() {
         return impresorConsola.generar(raiz);
     }
 
+    /* Devuelve el texto que explica por qué una clave baja por un hijo determinado, para el paso a paso. */
     private String explicarDescenso(Nodo nodo, int indice, String clave) {
 
         int total = nodo.claves.size();
@@ -582,7 +680,11 @@ public class ArbolBMas {
 
     // 6. Verificar enlaces entre hojas
 
-
+    /*
+    Recorre las hojas de izquierda a derecha por sus enlaces y devuelve sus
+    claves como texto. Muestra "<->" si el enlace es doble correcto y "->" si
+    falta el enlace de regreso. Sirve para comprobar que las hojas están bien enlazadas.
+    */
     public String clavesEnOrden() {
 
         if (raiz == null) {

@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/*
+Dibuja el árbol como texto en consola. Cada nodo se muestra con el texto que devuelve su
+toString(), y se une a sus hijos con líneas rectas.
+*/
+
 public class ImpresorConsola {
 
     private static final int SEPARACION = 3;
